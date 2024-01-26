@@ -4,6 +4,9 @@ import sys
 import wrapper_pb2
 
 
+BPPB_MAGIC = "BPPBv3"
+BPPB_MAGIC_ENCODED_LENGTH = 2 + len(BPPB_MAGIC)
+
 FORMAT_MAP = {1: 'B', 2: '?H', 4: '>I', 8: '>Q'}
 
 def bytes_count_to_format(count):
@@ -51,7 +54,10 @@ def merge(bplist, protobuf):
     min_relocated_key = min(objs_to_relocate, key=lambda k: objs_to_relocate[k])
     min_relocated_offset = objs_to_relocate[min_relocated_key]
     data_size_after_hole = len(bplist) - min_relocated_offset
-    hole_size = len(protobuf) + calc_protobuf_header(len(protobuf)) + calc_protobuf_header(data_size_after_hole)
+    hole_size = BPPB_MAGIC_ENCODED_LENGTH + \
+                len(protobuf) + \
+                calc_protobuf_header(len(protobuf)) + \
+                calc_protobuf_header(data_size_after_hole)
 
     # Encode new offsets table
     relocate_shift = hole_size + hole_extension_size
@@ -88,6 +94,7 @@ def merge(bplist, protobuf):
 
     # Compile the Payload and Footer element of the wrapper protobuf.
     my_message = wrapper_pb2.Wrapper()
+    my_message.Magic = BPPB_MAGIC
     my_message.Payload = protobuf
     my_message.FooterPadding = footer
     new_protobuf = my_message.SerializeToString()

@@ -1,7 +1,8 @@
 syntax = "proto3";
 
 message Wrapper {
-  bytes Payload = 1;
   bytes HeaderPadding = 12;
-  bytes FooterPadding = 2;
+  string Magic = 1;
+  bytes Payload = 2;
+  bytes FooterPadding = 3;
 }
