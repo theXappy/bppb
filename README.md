@@ -1,5 +1,8 @@
 # bppb
 A bplist-protobuf polyglot creator.
+Exmaple output found [here]([url](https://github.com/theXappy/bppb/raw/main/src/test/output.plist)).
+![image](https://github.com/theXappy/bppb/assets/10898152/a61ff93a-46f2-4285-ab92-4f8752ec45af)
+
 
 # How To
 1. Clone the repo
