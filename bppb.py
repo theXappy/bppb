@@ -31,18 +31,21 @@ def merge(bplist, protobuf):
         offset_data = offsets_table_data[offset_pos:offset_pos + offset_size]
         offsets_table[i], = struct.unpack(offsets_format, offset_data)
 
+    # Figure out which bplist objects need to be relocated to make room for the protobuf
     hole_offset = 114
-    hole_extension = 0
-    objs_to_relocate = {k:v for (k,v) in offsets_table.items() if v >= hole_offset}
-    objs_to_keep = {k:v for (k,v) in offsets_table.items() if v < hole_offset}
+    hole_extension_size = 6  # We plan on adding a bplist object header right before the hole.
+    objs_to_relocate = {k:v for (k,v) in offsets_table.items() if v >= (hole_offset - hole_extension_size)}
+    objs_to_keep = {k:v for (k,v) in offsets_table.items() if v < (hole_offset - hole_extension_size)}
 
     if hole_offset not in objs_to_relocate.values() and objs_to_keep:
-        # An object will be cut in half by the hole. Move it from 'keep' to 'relocate'
+        # This clause occurrs when an object is about to be cut in half by the hole.
+        # We move that object from the 'keep' list to 'relocate' list.
         max_key_before_hole = max(objs_to_keep, key=lambda k: objs_to_keep[k])
         max_offset_before_hole = objs_to_keep.pop(max_key_before_hole)
         objs_to_relocate[max_key_before_hole] = max_offset_before_hole
-        # We'll need to compensate for those extra borrowed bytes
-        hole_extension = hole_offset - max_offset_before_hole
+        # We'll need to compensate for those extra borrowed bytes.
+        # We call the extra freed space before the hole the "hole extension"
+        hole_extension_size = hole_offset - max_offset_before_hole
 
     # Calculating how much data will be present AFTER the hole
     min_relocated_key = min(objs_to_relocate, key=lambda k: objs_to_relocate[k])
@@ -51,7 +54,7 @@ def merge(bplist, protobuf):
     hole_size = len(protobuf) + calc_protobuf_header(len(protobuf)) + calc_protobuf_header(data_size_after_hole)
 
     # Encode new offsets table
-    relocate_shift = hole_size + hole_extension
+    relocate_shift = hole_size + hole_extension_size
     new_offsets_table = b''
     for i in range(num_objects):
         if i in objs_to_keep:
@@ -63,12 +66,20 @@ def merge(bplist, protobuf):
         new_offsets_table += struct.pack(offsets_format, new_offset)
 
     # Combine all parts into a new bplist
-    new_bplist = bplist[:hole_offset - hole_extension]
-    new_bplist += b'\x00' * hole_extension
+    new_bplist = bplist[:hole_offset - hole_extension_size]
+    if hole_extension_size > 6 and hole_size <= 0xffffffff:
+        hole_extension = b'\x00' * (hole_extension_size - 6)
+        hole_extension += b'\x5F'  # Obj Type: Byte array, Length: Extended to next byte(s)
+        hole_extension += b'\x12'  # [LENGTH] Obj Type: int, Length: 2^2 bytes
+        hole_extension += struct.pack('>I', hole_size)  # [LENGTH] Obj value
+    else:
+        print("Warning: Can't embed bplist data type to consume 'hole'.")
+        hole_extension = b'\x00' * hole_extension_size
+    new_bplist += hole_extension
 
     # Instead of concatinaing the shifted data of the bplist straight into new_bplist,
     # we first encode it into and the payload protobuf together, to create the 2nd part of the file.
-    footer = bplist[hole_offset - hole_extension : offsets_table_pos]
+    footer = bplist[hole_offset - hole_extension_size : offsets_table_pos]
     new_offsets_table_pos = len(new_bplist) + hole_size + len(footer)
     footer += new_offsets_table
     # Copy most of the old trailer, but reaplce the offsets table position
