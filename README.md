@@ -1,6 +1,6 @@
 # bppb
 A bplist-protobuf polyglot creator.
-Exmaple output found [here](https://github.com/theXappy/bppb/raw/main/src/test/output.plist).
+Exmaple output found [here](https://github.com/theXappy/bppb/raw/main/src/test/output.bppb).
 ![image](https://github.com/theXappy/bppb/assets/10898152/a61ff93a-46f2-4285-ab92-4f8752ec45af)
 
 
