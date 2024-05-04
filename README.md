@@ -29,7 +29,7 @@ message MyComplexProtobufMessage {
 message Wrapper {
   bytes HeaderPadding = 12;
   string Magic = 1;
-  MyComplexProtobufMessage Payload = 2;
+  MyComplexProtobufMessage Payload = 2; // <-- Changed the type to my custom payload type
   bytes FooterPadding = 3;
 }
 ```
