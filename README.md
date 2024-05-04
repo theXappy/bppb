@@ -35,3 +35,7 @@ message Wrapper {
 ```
 then compile a new parser with `protoc` and use it to read `Wrapper.Payload`.  
 This time the result will already be the same as the one you encoded in the input.
+
+## 👨‍🍳 CyberChef Recipe
+Use this recipe to test the protobuf interpertation of the bppb output: [Click](https://gchq.github.io/CyberChef/#recipe=Protobuf_Decode('syntax%20%3D%20%22proto3%22;%5Cn%5Cnmessage%20Wrapper%20%7B%5Cn%20%20bytes%20HeaderPadding%20%3D%2012;%5Cn%20%20string%20Magic%20%3D%201;%5Cn%20%20bytes%20Payload%20%3D%202;%5Cn%20%20bytes%20FooterPadding%20%3D%203;%5Cn%7D',false,false)JPath_expression('Payload','%5C%5Cn',true)Find_/_Replace(%7B'option':'Regex','string':'%22'%7D,'',true,false,true,false)From_Base64('A-Za-z0-9%2B/%3D',true,false)Protobuf_Decode('//%20Place%20your%20payload%20schema%20here',false,false)&input=YnBsaXN0MDDWAQIDBAUGBwgJCgsMXxAvTG9uZ0tleTAwMDAxMTExMjIyMjMzMzM0NDQ0NTU1NTY2NjY3Nzc3ODg4ODk5OTlRYVFiUWNRZFFlQhM3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAXxIAAAAcCgZCUFBCdjMSEAoOSGVsbG8sIFdvcmxkIX4adF8QP0FCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5IRB7CAkACBVHSUtNT1GO0NLT1AAAAAAAAAEBAAAAAAAAAA0AAAAAAAAAAAAAAAAAAADV)
+
